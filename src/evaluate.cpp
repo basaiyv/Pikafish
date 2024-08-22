@@ -35,6 +35,8 @@
 #include "nnue/nnue_accumulator.h"
 
 namespace Stockfish {
+int evaluate_48_0 = 1020, evaluate_48_1 = 1092, evaluate_48_2 = 1194, evaluate_52_0 = 434, evaluate_53_0 = 11623, evaluate_55_0 = 36, evaluate_56_0 = 615, evaluate_56_1 = 109, evaluate_56_2 = 509, evaluate_62_0 = 262;
+TUNE(evaluate_48_0, evaluate_48_1, evaluate_48_2, evaluate_52_0, evaluate_53_0, evaluate_55_0, evaluate_56_0, evaluate_56_1, evaluate_56_2, evaluate_62_0);
 
 // Evaluate is the evaluator for the outer world. It returns a static evaluation
 // of the position from the point of view of the side to move.
@@ -46,21 +48,21 @@ Value Eval::evaluate(const Eval::NNUE::Network& network,
     assert(!pos.checkers());
 
     auto [psqt, positional] = network.evaluate(pos, &caches.cache);
-    Value nnue              = (1020 * psqt + 1092 * positional) / 1194;
+    Value nnue              = ((evaluate_48_0) * psqt + (evaluate_48_1) * positional) / (evaluate_48_2);
     int   nnueComplexity    = std::abs(psqt - positional);
 
     // Blend optimism and eval with nnue complexity
-    optimism += optimism * nnueComplexity / 434;
-    nnue -= nnue * nnueComplexity / 11623;
+    optimism += optimism * nnueComplexity / (evaluate_52_0);
+    nnue -= nnue * nnueComplexity / (evaluate_53_0);
 
-    int mm = pos.major_material() / 36;
-    int v  = (nnue * (615 + mm) + optimism * (109 + mm)) / 509;
+    int mm = pos.major_material() / (evaluate_55_0);
+    int v  = (nnue * ((evaluate_56_0) + mm) + optimism * ((evaluate_56_1) + mm)) / (evaluate_56_2);
 
     // Evaluation grain (to get more alpha-beta cuts) with randomization (for robustness)
     v = (v / 16) * 16 - 1 + (pos.key() & 0x2);
 
     // Damp down the evaluation linearly when shuffling
-    v -= (v * pos.rule60_count()) / 262;
+    v -= (v * pos.rule60_count()) / (evaluate_62_0);
 
     // Guarantee evaluation does not hit the mate range
     v = std::clamp(v, VALUE_MATED_IN_MAX_PLY + 1, VALUE_MATE_IN_MAX_PLY - 1);
