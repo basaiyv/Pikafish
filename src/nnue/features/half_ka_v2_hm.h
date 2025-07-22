@@ -120,19 +120,22 @@ class HalfKAv2_hm {
             for (uint8_t knight = 0; knight <= 2; ++knight)
                 for (uint8_t cannon = 0; cannon <= 2; ++cannon)
                     v[rook][knight][cannon] = [&] {
-                        if (rook != 0)
-                            if (knight > 0 && cannon > 0)
-                                return 0;
-                            else if (rook == 2 || knight + cannon > 1)
+                        if (cannon == 2) // 桶0: 双炮威胁
+                            return 0;
+                        if (cannon == 1) {
+                            if (rook > 0) // 桶1: 车炮组合
                                 return 1;
-                            else
+                            if (knight > 0) // 桶2: 马炮组合
                                 return 2;
-                        else if (knight > 0 && cannon > 0)
+                        }
+                        // 以下是无炮或只有单炮但无配合的情况
+                        if (rook == 2) // 桶3: 双车威力
                             return 3;
-                        else if (knight + cannon > 1)
+                        if (rook == 1 && knight > 0) // 桶4: 车马组合
                             return 4;
-                        else
-                            return 5;
+                        
+                        // 桶5: 其他所有残子局面
+                        return 5;
                     }();
         return v;
     }();
