@@ -75,7 +75,7 @@ jobs:
       # To avoid double-zipping, we use the unzipped directory
       - uses: actions/upload-artifact@v4
         with:	
-          name: Pikafish-${{ matrix.config.name }}${{ matrix.arch }}
+          name: Pikafish-8M-${{ matrix.config.name }}${{ matrix.arch }}
           path: |
             ${{ env.EXE }}
             Wiki
