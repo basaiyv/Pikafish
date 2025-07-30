@@ -863,7 +863,7 @@ uint16_t Position::chased(Color c) {
     std::swap(c, sideToMove);
 
     // King and pawn can legally perpetual chase
-    Bitboard attackers = pieces(sideToMove) ^ pieces(sideToMove, KING, PAWN);
+    Bitboard attackers = pieces(sideToMove) ^ pieces(sideToMove);
     while (attackers)
     {
         Square    from         = pop_lsb(attackers);
@@ -874,7 +874,7 @@ uint16_t Position::chased(Color c) {
         if (blockers_for_king(sideToMove) & from)
             attacks &= pinners(~sideToMove) & ~pieces(KING);
         else
-            attacks &= (pieces(~sideToMove) ^ pieces(~sideToMove, KING, PAWN))
+            attacks &= (pieces(~sideToMove) ^ pieces(~sideToMove))
                      | (pieces(~sideToMove, PAWN) & HalfBB[sideToMove]);
 
         while (attacks)
