@@ -27,7 +27,7 @@ jobs:
             shell: msys2 {0}
             ext: .exe
             sde: /d/a/Pikafish/Pikafish/.output/sde-temp-files/sde-external-9.33.0-2024-01-07-win/sde.exe -future --
-        arch: ["-vnni512", "-avx512bw", "-avx512", "-avxvnni", "-bmi2", "-avx2", "-sse41-popcnt","-ssse3"]
+        arch: ["-avx512icl", "-vnni512", "-avx512bw", "-avx512", "-avxvnni", "-bmi2", "-avx2", "-sse41-popcnt"]
     defaults:
       run:
         working-directory: src
@@ -36,7 +36,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-    
+      - name: Install LLVM and Clang
+        if: runner.os == 'Linux'
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod u+x llvm.sh
+          echo | sudo ./llvm.sh 20
+          rm llvm.sh
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 100
+          sudo update-alternatives --install /usr/bin/llvm-profdata llvm-profdata /usr/bin/llvm-profdata-20 100
+          sudo update-alternatives --set clang++ /usr/bin/clang++-20
+          sudo update-alternatives --set llvm-profdata /usr/bin/llvm-profdata-20
 
       - name: Setup msys and install required packages
         if: runner.os == 'Windows'
@@ -92,9 +102,24 @@ jobs:
 
       # Artifacts automatically get zipped.
       # To avoid double-zipping, we use the unzipped directory
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pikafish-MacOS-apple-silicon
+          path: ${{ env.EXE }}
 
-
-
+  Pikafish-Android:
+    name: Android-${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    env:
+      ARCH: ${{ matrix.arch }}
+      COMPCXX: aarch64-linux-android29-clang++
+      COMP: ndk
+      EXE: pikafish-${{ matrix.arch }}
+      LDFLAGS: "-static -Wno-unused-command-line-argument"
+    strategy:
+      matrix:
+        arch: ["armv8-dotprod", "armv8"]
+    defaults:
       run:
         working-directory: src
 
@@ -106,7 +131,16 @@ jobs:
           sudo apt update
           sudo apt install qemu-user
 
-    
+      - name: Install NDK
+        run: |
+          NDKV="27.2.12479018"
+          ANDROID_ROOT=/usr/local/lib/android
+          ANDROID_SDK_ROOT=$ANDROID_ROOT/sdk
+          SDKMANAGER=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
+          echo "y" | $SDKMANAGER "ndk;$NDKV"
+          ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/$NDKV
+          ANDROID_NDK_BIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
+          echo "ANDROID_NDK_BIN=$ANDROID_NDK_BIN" >> $GITHUB_ENV
 
       - name: Compile ${{ matrix.arch }} build
         run: |
@@ -136,7 +170,12 @@ jobs:
         run: |
           mkdir Windows
           mv Pikafish-Windows*/* Windows
-        
+          mkdir Linux
+          mv Pikafish-Linux*/* Linux
+          mkdir MacOS
+          mv Pikafish-MacOS*/* MacOS
+          mkdir Android
+          mv Pikafish-Android*/* Android
 
       - name: Download wiki
         run: |
