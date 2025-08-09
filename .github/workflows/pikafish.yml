@@ -3,7 +3,7 @@ name: Pikafish
 on:
   push:
     branches:
-      - master
+      - patch-rule
 
 jobs:
   Pikafish-x86-64:
@@ -27,7 +27,7 @@ jobs:
             shell: msys2 {0}
             ext: .exe
             sde: /d/a/Pikafish/Pikafish/.output/sde-temp-files/sde-external-9.33.0-2024-01-07-win/sde.exe -future --
-        arch: ["-avx512icl", "-vnni512", "-avx512bw", "-avx512", "-avxvnni", "-bmi2", "-avx2", "-sse41-popcnt"]
+        arch: ["-avx512icl", "-vnni512", "-avx512bw", "-avx512", "-avxvnni", "-bmi2", "-avx2", "-sse41-popcnt","-ssse3"]
     defaults:
       run:
         working-directory: src
