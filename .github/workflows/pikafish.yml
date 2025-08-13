@@ -3,7 +3,7 @@ name: Pikafish
 on:
   push:
     branches:
-      - master
+      - basaiyv-patch-1
 
 jobs:
   Pikafish-x86-64:
