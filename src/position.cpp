@@ -968,7 +968,7 @@ Value Position::detect_chases(int d, int ply) {
     }
 
     return bool(chase[us]) ^ bool(chase[them]) ? chase[us] ? mated_in(ply) : mate_in(ply)
-                                               : VALUE_DRAW;
+                                               
 }
 
 
