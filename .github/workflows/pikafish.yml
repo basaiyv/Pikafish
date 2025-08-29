@@ -18,16 +18,12 @@ jobs:
     strategy:
       matrix:
         config:
-          - name: Linux
-            os: ubuntu-22.04 
-            shell: bash
-            sde: /home/runner/work/Pikafish/Pikafish/.output/sde-temp-files/sde-external-9.33.0-2024-01-07-lin/sde -future --
           - name: Windows
             os: windows-latest
             shell: msys2 {0}
             ext: .exe
             sde: /d/a/Pikafish/Pikafish/.output/sde-temp-files/sde-external-9.33.0-2024-01-07-win/sde.exe -future --
-        arch: ["-avx512icl", "-vnni512", "-avx512bw", "-avx512", "-avxvnni", "-bmi2", "-avx2", "-sse41-popcnt","-ssse3"]
+        arch: [ "-avx512bw", "-avx512", "-bmi2", "-avx2", "-sse41-popcnt","-ssse3"]
     defaults:
       run:
         working-directory: src
@@ -35,18 +31,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install LLVM and Clang
-        if: runner.os == 'Linux'
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod u+x llvm.sh
-          echo | sudo ./llvm.sh 20
-          rm llvm.sh
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 100
-          sudo update-alternatives --install /usr/bin/llvm-profdata llvm-profdata /usr/bin/llvm-profdata-20 100
-          sudo update-alternatives --set clang++ /usr/bin/clang++-20
-          sudo update-alternatives --set llvm-profdata /usr/bin/llvm-profdata-20
 
       - name: Setup msys and install required packages
         if: runner.os == 'Windows'
