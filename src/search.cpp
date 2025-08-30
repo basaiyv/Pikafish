@@ -642,7 +642,9 @@ Value Search::Worker::search(
     if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
         && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))
-        && (cutNode == (ttData.value >= beta) || depth > 5))
+        && (cutNode == (ttData.value >= beta) || depth > 5)
+        // avoid a TT cutoff if the rule60 count is high and the TT move is zeroing
+        && (depth > 8 || ttData.move == Move::none() || pos.rule60_count() < 100 || !ttCapture))
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit
         if (ttData.move && ttData.value >= beta)
@@ -659,7 +661,7 @@ Value Search::Worker::search(
 
         // Partial workaround for the graph history interaction problem
         // For high rule60 counts don't produce transposition table cutoffs.
-        if (pos.rule60_count() < 117)
+        if (pos.rule60_count() < 116)
         {
             if (depth >= 8 && ttData.move && pos.pseudo_legal(ttData.move) && pos.legal(ttData.move)
                 && !is_decisive(ttData.value))
@@ -835,8 +837,6 @@ Value Search::Worker::search(
 
             assert(pos.capture(move));
 
-            movedPiece = pos.moved_piece(move);
-
             do_move(pos, move, st, ss);
 
             // Perform a preliminary qsearch to verify that the move holds
@@ -945,7 +945,7 @@ moves_loop:  // When in check, search starts here
                 int   captHist = captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
-                if (!givesCheck && lmrDepth < 19 && !ss->inCheck)
+                if (!givesCheck && lmrDepth < 19)
                 {
                     Value futilityValue = ss->staticEval + 318 + 350 * lmrDepth
                                         + 275 * (move.to_sq() == prevSq) + PieceValue[capturedPiece]
@@ -974,9 +974,8 @@ moves_loop:  // When in check, search starts here
 
                 lmrDepth += history / 3654;
 
-                Value baseFutility = (bestMove ? 46 : 282);
-                Value futilityValue =
-                  ss->staticEval + baseFutility + 124 * lmrDepth + 104 * (ss->staticEval > alpha);
+                Value futilityValue = ss->staticEval + 46 + 282 * !bestMove + 124 * lmrDepth
+                                    + 104 * (ss->staticEval > alpha);
 
                 // Futility pruning: parent node
                 // (*Scaler): Generally, more frequent futility pruning
@@ -1248,7 +1247,7 @@ moves_loop:  // When in check, search starts here
 
                 if (value >= beta)
                 {
-                    // (* Scaler) Especially if they make cutoffCnt increment more often.
+                    // (*Scaler) Especially if they make cutoffCnt increment more often.
                     ss->cutoffCnt += (extension < 2) || PvNode;
                     assert(value >= beta);  // Fail high
                     break;
