@@ -950,9 +950,7 @@ Value Position::detect_chases(int d, int ply) {
     uint16_t chase[COLOR_NB] = {0xFFFF, 0xFFFF};
     for (int i = 0; i < d; ++i)
     {
-        if (st->checkersBB)
-            return VALUE_DRAW;
-        else if (!chase[~sideToMove])
+       if (!chase[~sideToMove])
         {
             if (!chase[sideToMove])
                 break;
@@ -1041,7 +1039,7 @@ bool Position::rule_judge(Value& result, int ply) {
     }
 
     // 60 move rule
-    if (st->rule60 >= 120)
+    if (st->rule60 >= 160)
     {
         result = MoveList<LEGAL>(*this).size() ? VALUE_DRAW : mated_in(ply);
         return true;
