@@ -76,7 +76,7 @@ jobs:
   Pikafish:
     name: Pikafish
     runs-on: ubuntu-latest
-    needs: [Pikafish-x86-64, Pikafish-MacOS, Pikafish-Android]
+    needs: [Pikafish-x86-64]
 
     steps:
       - uses: actions/checkout@v4
