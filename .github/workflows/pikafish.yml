@@ -66,12 +66,7 @@ jobs:
 
  
 
-      # Artifacts automatically get zipped.
-      # To avoid double-zipping, we use the unzipped directory
-      - uses: actions/upload-artifact@v4
-        with:	
-          name: Pikafish-Android-${{ matrix.arch }}
-          path: ${{ env.EXE }}
+    
 
   Pikafish:
     name: Pikafish
@@ -104,7 +99,6 @@ jobs:
           path: |
             Windows
             Linux
-  
             Wiki
             AUTHORS
             CONTRIBUTING.md
