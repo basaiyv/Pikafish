@@ -1130,9 +1130,7 @@ Value Position::detect_chases(int d, int ply) {
     uint16_t chase[COLOR_NB] = {0xFFFF, 0xFFFF};
     for (int i = 0; i < d; ++i)
     {
-        if (st->checkersBB)
-            return VALUE_DRAW;
-        else if (!chase[~sideToMove])
+         if (!chase[~sideToMove])
         {
             if (!chase[sideToMove])
                 break;
