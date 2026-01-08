@@ -1198,7 +1198,7 @@ bool Position::rule_judge(Value& result, int ply) {
                 if (filter[st->key] <= 1)
                 {
                     // Not exceeding rule 60 and have the same previous step
-                    if (st->rule60 < 160 && st->previous->key == stp->previous->key)
+                    if (st->rule60 < 180 && st->previous->key == stp->previous->key)
                     {
                         // Even if we entering this loop again, it will not lead to a 3 fold repetition
                         StateInfo* prev = st->previous;
@@ -1219,7 +1219,7 @@ bool Position::rule_judge(Value& result, int ply) {
     }
 
     // 60 move rule
-    if (st->rule60 >= 160)
+    if (st->rule60 >= 180)
     {
         result = MoveList<LEGAL>(*this).size() ? VALUE_DRAW : mated_in(ply);
         return true;
