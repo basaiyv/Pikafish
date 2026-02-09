@@ -101,13 +101,14 @@ void update_correction_history(const Position& pos,
     shared.nonpawn_correction_entry<WHITE>(pos).at(us).nonPawnWhite << bonus * nonPawnWeight / 128;
     shared.nonpawn_correction_entry<BLACK>(pos).at(us).nonPawnBlack << bonus * nonPawnWeight / 128;
 
-    if (m.is_ok())
-    {
-        const Square to = m.to_sq();
-        const Piece  pc = pos.piece_on(m.to_sq());
-        (*(ss - 2)->continuationCorrectionHistory)[pc][to] << bonus * 131 / 128;
-        (*(ss - 4)->continuationCorrectionHistory)[pc][to] << bonus * 63 / 128;
-    }
+    // Branchless: use mask to zero bonus when move is not ok
+    const int    mask   = int(m.is_ok());
+    const Square to     = m.to_sq_unchecked();
+    const Piece  pc     = pos.piece_on(to);
+    const int    bonus2 = (bonus * 131 / 128) * mask;
+    const int    bonus4 = (bonus * 63 / 128) * mask;
+    (*(ss - 2)->continuationCorrectionHistory)[pc][to] << bonus2;
+    (*(ss - 4)->continuationCorrectionHistory)[pc][to] << bonus4;
 }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
@@ -1344,8 +1345,7 @@ moves_loop:  // When in check, search starts here
         mainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 216 / 32768;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN)
-            sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq]
-              << scaledBonus * 244 / 8192;
+            sharedHistory.pawn_entry(pos)[pos.piece_on(prevSq)][prevSq] << scaledBonus * 244 / 8192;
     }
 
     // Bonus for prior capture countermove that caused the fail low
