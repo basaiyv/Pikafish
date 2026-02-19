@@ -129,9 +129,9 @@ void update_all_stats(const Position& pos,
                       Move            ttMove);
 
 bool is_shuffling(Move move, Stack* const ss, const Position& pos) {
-    if (pos.capture(move) || pos.rule60_count() < 10)
+    if (pos.capture(move) || pos.rule60_count() < 11)
         return false;
-    if (pos.state()->pliesFromNull <= 6 || ss->ply < 20)
+    if (pos.state()->pliesFromNull <= 6 || ss->ply < 19)
         return false;
     return move.from_sq() == (ss - 2)->currentMove.to_sq()
         && (ss - 2)->currentMove.from_sq() == (ss - 4)->currentMove.to_sq();
@@ -291,7 +291,7 @@ void Search::Worker::iterative_deepening() {
 
     for (Color c : {WHITE, BLACK})
         for (int i = 0; i < UINT_16_HISTORY_SIZE; i++)
-            mainHistory[c][i] = mainHistory[c][i] * 3 / 4;
+            mainHistory[c][i] = mainHistory[c][i] * 768 / 1024;
 
     // Iterative deepening loop until requested to stop or the target depth is reached
     while (++rootDepth < MAX_PLY && !threads.stop
@@ -548,7 +548,7 @@ void Search::Worker::clear() {
 
     for (auto& to : continuationCorrectionHistory)
         for (auto& h : to)
-            h.fill(8);
+            h.fill(7);
 
     for (bool inCheck : {false, true})
         for (StatsType c : {NoCaptures, Captures})
@@ -740,7 +740,7 @@ Value Search::Worker::search(
         // For high rule60 counts don't produce transposition table cutoffs.
         if (pos.rule60_count() < 116)
         {
-            if (depth >= 8 && ttData.move && pos.pseudo_legal(ttData.move) && pos.legal(ttData.move)
+            if (depth >= 7 && ttData.move && pos.pseudo_legal(ttData.move) && pos.legal(ttData.move)
                 && !is_decisive(ttData.value))
             {
                 pos.do_move(ttData.move, st);
@@ -850,7 +850,7 @@ Value Search::Worker::search(
         assert(probCutBeta < VALUE_INFINITE && probCutBeta > beta);
 
         MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval, &captureHistory);
-        Depth      probCutDepth = depth - 5;
+        Depth      probCutDepth = depth - 4;
 
         while ((move = mp.next_move()) != Move::none())
         {
@@ -1126,7 +1126,7 @@ moves_loop:  // When in check, search starts here
 
         // Scale up reductions for expected ALL nodes
         if (allNode)
-            r += r / (depth + 1);
+            r += r * 256 / (256 * depth + 256);
 
         // Step 16. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1337,7 +1337,7 @@ moves_loop:  // When in check, search starts here
         const int scaledBonus = std::min(148 * depth - 86, 2188) * bonusScale;
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      scaledBonus * 383 / 32768);
+                                      scaledBonus * 192 / 16384);
 
         mainHistory[~us][((ss - 1)->currentMove).raw()] << scaledBonus * 216 / 32768;
 

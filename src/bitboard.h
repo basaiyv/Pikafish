@@ -492,7 +492,7 @@ constexpr auto PseudoAttacks = [] {
 template<PieceType Pt>
 inline Bitboard attacks_bb(Square s, Color c = COLOR_NB) {
 
-    assert((Pt != KNIGHT_TO) && ((Pt != PAWN && Pt != PAWN_TO) || c < COLOR_NB) && (is_ok(s)));
+    assert(Pt != KNIGHT_TO && ((Pt != PAWN && Pt != PAWN_TO) || c < COLOR_NB) && is_ok(s));
     if constexpr (Pt != PAWN && Pt != PAWN_TO)
         return PseudoAttacks[Pt][s];
     else if constexpr (Pt == PAWN)
@@ -507,7 +507,7 @@ inline Bitboard attacks_bb(Square s, Color c = COLOR_NB) {
 template<PieceType Pt>
 inline Bitboard attacks_bb(Square s, Bitboard occupied) {
 
-    assert((Pt != PAWN) && (Pt != PAWN_TO) && (is_ok(s)));
+    assert(Pt != PAWN && Pt != PAWN_TO && is_ok(s));
 
     switch (Pt)
     {
@@ -531,7 +531,7 @@ inline Bitboard attacks_bb(Square s, Bitboard occupied) {
 // Sliding piece attacks do not continue passed an occupied square.
 inline Bitboard attacks_bb(PieceType pt, Square s, Bitboard occupied) {
 
-    assert((pt != PAWN) && (pt < KNIGHT_TO) && (is_ok(s)));
+    assert(pt != PAWN && pt < KNIGHT_TO && is_ok(s));
 
     switch (pt)
     {
@@ -551,7 +551,7 @@ inline Bitboard attacks_bb(PieceType pt, Square s, Bitboard occupied) {
 template<PieceType Pt>
 inline Bitboard unconstrained_attacks_bb(Square s) {
 
-    assert((Pt == KING || Pt == ADVISOR) && (is_ok(s)));
+    assert((Pt == KING || Pt == ADVISOR) && is_ok(s));
 
     switch (Pt)
     {
