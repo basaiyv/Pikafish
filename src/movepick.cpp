@@ -134,7 +134,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
           pos.attacks_by<ADVISOR>(~us) | pos.attacks_by<BISHOP>(~us) | threatByLesser[ADVISOR];
         threatByLesser[ROOK] =
           pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<CANNON>(~us) | threatByLesser[KNIGHT];
-        threatByLesser[KING] = pos.attacks_by<ROOK>(~us) | threatByLesser[ROOK];
+        threatByLesser[KING] = 0;
     }
 
     ExtMove* it = cur;
